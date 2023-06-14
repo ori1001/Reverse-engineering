@@ -1,0 +1,5 @@
+We probably need to hook "004015CB"
+Maybe at the end? (Override last 5 bytes)
+
+Or maybe we need to hook puts at "00401912"
+but one time hook

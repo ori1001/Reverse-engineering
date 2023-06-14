@@ -140,6 +140,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="CodeProject.c" />
+    <ClCompile Include="injector_template.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="input.txt" />

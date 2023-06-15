@@ -1,8 +1,74 @@
 #include "pch.h"
 #include <Windows.h>
 #include <stdio.h>
+#include <fstream>
+#include <iomanip>
 // Add additional includes if needed
 // using namespace std;
+
+void our_decrypt(char* inp)
+{
+    int i = 0; //read_idx
+    int k = 0; //write idx
+    while (inp[i] != '\0')
+    {
+        if (inp[i] > '~' || inp[i] < ' ')
+        {
+            inp[k] = inp[i];
+            k++; i++;
+        }
+        else
+        {
+            int int_let = 0;
+            for (int j = 0; j < 2; j++)
+            {
+                if (inp[i + 1] == '+')
+                {
+                    int_let += inp[i] - '0' + inp[i + 2] - '0';
+                    i += 3;
+                }
+                else if (inp[i + 1] == '-')
+                {
+                    i += 3;
+                }
+                else if (inp[i] >= '2' && inp[i] <= '9')
+                {
+                    int_let += inp[i] - '0';
+                    i++;
+                }
+                else
+                {
+                    switch (inp[i])
+                    {
+                    case 'A':
+                        int_let += 1;
+                        break;
+                    case 'J':
+                        int_let += 10;
+                        break;
+                    case 'Q':
+                        int_let += 11;
+                        break;
+                    case 'K':
+                        int_let += 12;
+                        break;
+                    default:
+                        int_let += inp[i];
+                    }
+                    i++;
+                }
+                if (j == 0) {
+                    int_let = int_let << 4;
+                }
+            }
+            inp[k++] = int_let;
+        }
+    }
+    inp[k++] = '\0';
+}
+
+
+
 
 // for logging. format: log_file << ... << std::endl;
 // #include <fstream> 
@@ -20,7 +86,7 @@ FUNC_PTR original_func_address;
 // LPVOID to_return_address;
 
 // Global variables
-CHAR OrigOpcode[6] = "\xB8\x1C\x20\x00\x00"; // Restores overriden bytes from hooked function
+CHAR OrigOpcode[6] = "\x5B\x5E\x5F\x5D\xC3"; // Restores overriden bytes from hooked function
 CHAR JmpOpcode[6] = "\xE9\x90\x90\x90\x90"; // Inserted into hooked function, in order to jmp to hook
 DWORD lpProtect = 0;
 
@@ -40,21 +106,29 @@ void _stdcall restore_hook() {
 
 // Hook function. Might use helper functions in C, i.e. void _stdcall helper(int num) {}
 __declspec(naked) void funcHook() {
+
 	// Restore overriden bytes
-	remove_hook();
+	//remove_hook();
 
 	// Assembly part. Should call restore_hook somewhere inside, can call original_func_addr
 	__asm {
-		// ...
-		// call restore_hook;
-		// ...
-		// ret; // maybe
+        push eax    //save original function return value
+        mov eax, [ebp + 12]
+        push eax    //move buffer as parameter
+        call our_decrypt
+        pop eax     //remove parameter
+        pop eax     //restore return value
+        pop     ebx //restore original function functionality and return from original function
+        pop     esi
+        pop     edi
+        pop     ebp
+        ret
 	}
 }
 
 void setHook() {
-	HMODULE h = GetModuleHandle(L"<dll_with_func_to_hook_name>.dll");
-	// Another option: HMODULE h = GetModuleHandle(L"<name_of_our_program>.exe");
+	//HMODULE h = GetModuleHandle(L"<dll_with_func_to_hook_name>.dll");
+	HMODULE h = GetModuleHandle(L"client.exe");
 	LPVOID JumpTo;
 
 	if (h == NULL) {
@@ -62,15 +136,19 @@ void setHook() {
 		return;
 	}
 
-	original_func_address = (FUNC_PTR)GetProcAddress(h, "<func_to_hook_name>");
-	// Another option: original_func_address = (char*)h + <offset> if h == our_program.exe, for example.
-	if (original_func_address == NULL) {
-		// can't find function
-		return;
-	}
+	//original_func_address = (FUNC_PTR)GetProcAddress(h, "<func_to_hook_name>");
+	original_func_address = (char*)((long)h + (long)0x17AC); //TODO: test this
 
-	JumpTo = (FUNC_PTR)((char*)&funcHook - ((char*)original_func_address + 5)); // The "+5" part is for the offset to be calculated relatively to the address AFTER jmp
+    
+	//if (original_func_address == NULL) {
+	//	// can't find function
+	//	return;
+	//}
+
+	JumpTo = (FUNC_PTR)((char*)&funcHook - ((char*)original_func_address + 5)); // NO: The "+5" part is for the offset to be calculated relatively to the address AFTER jmp
 	memcpy(JmpOpcode + 1, &JumpTo, 0x4); // prepare the jmp opcode
+
+
 
 	// save old bytes - save this arr globally if needed to be restored in hook_func
 	memcpy(&OrigOpcode, (char*)original_func_address, 0x5); // override the first five bytes with jmp

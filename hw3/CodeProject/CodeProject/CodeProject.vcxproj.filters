@@ -27,4 +27,9 @@
       <Filter>Source Files</Filter>
     </Text>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="client.exe">
+      <Filter>Source Files</Filter>
+    </None>
+  </ItemGroup>
 </Project>

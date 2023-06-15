@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #define MY_LEN 1000
 
-int main()
+int main2()
 {
     char inp[MY_LEN];
     FILE *fptr = fopen("input.txt", "r");

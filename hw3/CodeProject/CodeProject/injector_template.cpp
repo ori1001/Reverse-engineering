@@ -1,10 +1,11 @@
 #include <windows.h>
 #include <stdio.h>
+#include <iostream>
 #include <tlhelp32.h>
 #include <Shlwapi.h>
 
 // LPSTR DLL_PATH; // If name of dll is passed as argument to exe
-#define DLL_PATH "<HookDLL>.dll" // Otherwise (built-in in exe)
+#define DLL_PATH "HookDLL.dll" // Otherwise (built-in in exe)
 #define true 1
 #define false 0
 
@@ -30,12 +31,13 @@ int main(int argc, char** argv)
     //}
     //LPSTR lpCmdLine = (LPSTR)argv[1];
     //DLL_PATH = (LPSTR)argv[2];
-
+        
     // OR 2b) Fix a specific command line (can include arguments):
-    LPSTR lpCmdLine = (LPSTR)"<program>.exe <ARGS>";
+    LPSTR lpCmdLine = (LPSTR)"client.exe DMSG"; //TODO: test this
+    //LPSTR lpAppName = (LPSTR)"DMSG"; //TODO: test this
 
     // 3) Create process to run cmdline
-    if (CreateProcessA(lpCmdLine, NULL, NULL, NULL, NULL, CREATE_SUSPENDED, NULL, NULL, &Startup, &pi) == FALSE) {
+    if (CreateProcessA(NULL, lpCmdLine, NULL, NULL, NULL, CREATE_SUSPENDED, NULL, NULL, &Startup, &pi) == FALSE) {
         printf("couldnt open process %s\n", lpCmdLine);
         return 1;
     }

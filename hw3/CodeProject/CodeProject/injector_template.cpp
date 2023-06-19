@@ -5,7 +5,7 @@
 #include <Shlwapi.h>
 
 // LPSTR DLL_PATH; // If name of dll is passed as argument to exe
-#define DLL_PATH "HookDLL.dll" // Otherwise (built-in in exe)
+#define DLL_PATH "Client.dll" // Otherwise (built-in in exe)
 #define true 1
 #define false 0
 

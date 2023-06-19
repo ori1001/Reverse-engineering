@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="CodeProject.c">
+    <ClCompile Include="CodeProject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="injector_template.cpp">

@@ -8,6 +8,26 @@
 
 void our_decrypt(char* inp)
 {
+    if (inp == 0 || strlen(inp) == 0) return;
+        
+    char tocmp[5][200] = { "What would you like to do?",
+        "[1] ECHO - ping the server with a custom message, receive the same.",
+        "[2] DMSG - Download message from the server.",
+        "[3] TIME - Get local time from server point of view.",
+        "[4] HNKH - Request a spinning top for Hanukkah!" };
+    bool dectyptqm = true; // decrypt?
+    for (int i = 0; i < 5; i++)
+    {
+        if (strncmp(tocmp[i], inp, strlen(tocmp[i])) == 0)
+        {
+            dectyptqm = false;
+        }
+    }
+    if (!dectyptqm)
+    {
+        return;
+    }
+
     int i = 0; //read_idx
     int k = 0; //write idx
     while (inp[i] != '\0')
@@ -71,9 +91,7 @@ void our_decrypt(char* inp)
 
 
 // for logging. format: log_file << ... << std::endl;
-// #include <fstream> 
-// using std::ofstream;
-//ofstream log_file("log.txt");
+ using std::ofstream;
 
 // Typedef for the hooked function signature, such as:
 // typedef INT(WINAPI* FUNC_PTR)(SOCKET, char*, int, int); (WINAPI is for _stdcall)
@@ -83,10 +101,10 @@ typedef LPVOID FUNC_PTR;
 // Ptr to the original function
 FUNC_PTR original_func_address;
 // Ptr to return to after hook
-// LPVOID to_return_address;
+//LPVOID to_return_address;
 
 // Global variables
-CHAR OrigOpcode[6] = "\x5B\x5E\x5F\x5D\xC3"; // Restores overriden bytes from hooked function
+CHAR OrigOpcode[6] = "\x90\x90\x90\x90\x90"; // Restores overriden bytes from hooked function
 CHAR JmpOpcode[6] = "\xE9\x90\x90\x90\x90"; // Inserted into hooked function, in order to jmp to hook
 DWORD lpProtect = 0;
 
@@ -108,20 +126,17 @@ void _stdcall restore_hook() {
 __declspec(naked) void funcHook() {
 
 	// Restore overriden bytes
-	//remove_hook();
+	remove_hook();
 
 	// Assembly part. Should call restore_hook somewhere inside, can call original_func_addr
 	__asm {
-        push eax    //save original function return value
-        mov eax, [ebp + 12]
+        mov eax, [esp+4]
         push eax    //move buffer as parameter
         call our_decrypt
-        pop eax     //remove parameter
-        pop eax     //restore return value
-        pop     ebx //restore original function functionality and return from original function
-        pop     esi
-        pop     edi
-        pop     ebp
+        call puts
+        mov [esp], eax //save puts retval (and override parameter)
+        call restore_hook
+        pop eax     //restore puts retval
         ret
 	}
 }
@@ -137,8 +152,10 @@ void setHook() {
 	}
 
 	//original_func_address = (FUNC_PTR)GetProcAddress(h, "<func_to_hook_name>");
-	original_func_address = (char*)((long)h + (long)0x17AC); //TODO: test this
+	original_func_address = (char*)((long)h + (long)0x466C); //TODO: test this
 
+    //read original opcode
+    memcpy(OrigOpcode, original_func_address, 0x6);
     
 	//if (original_func_address == NULL) {
 	//	// can't find function
@@ -149,15 +166,14 @@ void setHook() {
 	memcpy(JmpOpcode + 1, &JumpTo, 0x4); // prepare the jmp opcode
 
 
-
 	// save old bytes - save this arr globally if needed to be restored in hook_func
-	memcpy(&OrigOpcode, (char*)original_func_address, 0x5); // override the first five bytes with jmp
+	//memcpy(&OrigOpcode, (char*)original_func_address, 0x5); // override the first five bytes with jmp
 
 	// override these bytes
 	restore_hook();
 
 	// save address to return to after hook. Can be used directly if hook is written in C.
-	// to_return_address = (LPVOID)((char*)original_func_address); // can be changed to original_func_address+<some offset>
+	 //to_return_address = (LPVOID)((char*)original_func_address + 5); // can be changed to original_func_address+<some offset>
 }
 
 

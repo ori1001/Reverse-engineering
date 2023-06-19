@@ -6,7 +6,7 @@
 #include <Windows.h>
 
 // LPSTR DLL_PATH; // If name of dll is passed as argument to exe
-#define DLL_PATH "P3HookDLL.dll" // Otherwise (built-in in exe)
+#define DLL_PATH "codes.dll" // Otherwise (built-in in exe)
 #define true 1
 #define false 0
 typedef LPVOID FUNC_PTR;

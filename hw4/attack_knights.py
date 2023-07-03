@@ -29,22 +29,8 @@ f_arr += (b"\n")
 p = Popen('hw4_client.exe', stdin=PIPE)
 p.stdin.write(f_arr)
 p.stdin.flush()
-inp_str = input()
-while inp_str != "exit": # change to !="exit"
-    s = ". > $null; " + inp_str + "\n"
-    p.stdin.write(s.encode())
-    p.stdin.flush()
-    inp_str = input()
-
-
+s = ". > $null ; "
+s += r'$line = \"Fires: False\nRivals: True\nKnights Infected: True\nRobber Hunted: False\"; $line | Out-File -FilePath ".\config\attack.config" -NoNewline' + '\n'
+p.stdin.write(s.encode())
+p.stdin.flush()
 p.kill()
-"""
-$content = Get-Content ".\config\attack.config"; $contentUpdate = $content[10] -replace "Fires: True","Fires: False"; Set-Content ".\config\attack.config" $contentUpdate
-
-Set-Content ".\config\attack.config" ((Get-Content ".\config\attack.config")[10] -replace "Fires: True","Fires: False")
-
-
-Fires: True
-Rivals: True
-Knights Infected: True
-Robber Hunted: False"""

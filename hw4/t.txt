@@ -1,0 +1,1 @@
+$line = \"Fires: False\nRivals: True\nKnights Infected: True\nRobber Hunted: False\"; $line | Out-File -FilePath ".\config\attack.config" -NoNewline

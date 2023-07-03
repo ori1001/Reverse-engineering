@@ -39,6 +39,7 @@ f.write(b"1234\n")
 f.write(b"1234\n")
 
 f.close()
+print(len(sc_arr)-5)
 
 #jump from: 005fdccc
 #jump to: 005fdc82
